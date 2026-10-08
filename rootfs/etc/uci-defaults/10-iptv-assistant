@@ -1,0 +1,25 @@
+#!/bin/sh
+[ -f /etc/config/iptv_assistant ] && exit 0
+cat > /etc/config/iptv_assistant <<'EOF'
+config globals 'main'
+	option enabled '1'
+	option rmem_max '16777216'
+	option rmem_default '2097152'
+	option netdev_max_backlog '5000'
+
+config interface 'iptv'
+	option iface 'pppoe-wan1'
+	option igmp_version '2'
+
+config bridge 'bridge'
+	option device 'br-lan'
+	option snooping '1'
+	option querier '1'
+
+config fcc 'fcc'
+	option enabled '1'
+	option interface 'wan1'
+	option target '121.60.255.120'
+	option netmask '255.255.255.255'
+EOF
+exit 0

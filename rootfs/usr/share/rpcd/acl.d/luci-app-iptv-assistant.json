@@ -1,0 +1,20 @@
+{
+	"luci-app-iptv-assistant": {
+		"description": "Grant UCI + file access for luci-app-iptv-assistant",
+		"read": {
+			"uci": [ "iptv_assistant", "network" ],
+			"file": {
+				"/proc/net/dev": [ "read" ]
+			}
+		},
+		"write": {
+			"uci": [ "iptv_assistant" ],
+			"ubus": {
+				"file": [ "exec" ]
+			},
+			"file": {
+				"/etc/init.d/iptv-assistant": [ "exec" ]
+			}
+		}
+	}
+}

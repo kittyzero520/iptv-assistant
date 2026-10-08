@@ -1,0 +1,12 @@
+{
+	"admin/network/iptv_assistant": {
+		"title": "IPTV 网络助手",
+		"action": {
+			"type": "view",
+			"path": "iptv_assistant"
+		},
+		"depends": {
+			"fs": { "/etc/config/iptv_assistant": "file" }
+		}
+	}
+}
