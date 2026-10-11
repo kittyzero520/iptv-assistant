@@ -1,6 +1,6 @@
 # IPTV 网络助手（iptv-assistant）.run 包
 
-iStoreOS 25.12 自解压安装器。**用途：湖北电信 IPTV 全链路助手**——强组播协议版本、优内网桥转发、保 FCC 快速换台，LuCI 全中文界面，所有参数带默认值可随时恢复。
+iStoreOS 25.12 自解压安装器。**用途：湖北电信 IPTV 全链路助手**——强组播协议版本、优内网桥转发、保 FCC 快速换台、系统日志持久化，LuCI 全中文界面，所有参数带默认值可随时恢复。
 
 ## 插件用途（三大功能）
 
@@ -10,6 +10,7 @@ iStoreOS 25.12 自解压安装器。**用途：湖北电信 IPTV 全链路助手
 | **组播桥优化** | snooping=0 组播洪泛内网；无 querier 订阅约 4 分钟老化断流 | `br-lan` 上 snooping=1 + querier=1（必须同开） |
 | **FCC 快速换台路由** | FCC 服务器 `121.60.255.120` 在 IPTV 专网，无路由则流量走公网口 → 快速换台失效 | 开启，`121.60.255.120/32` 走 `wan1` |
 | **内核缓冲调优**（附带） | 组播突发易丢包 | rmem_max=16777216 / rmem_default=2097152 / netdev_max_backlog=5000 |
+| **系统日志持久化** | logread 默认在内存,重启即清空,断网/故障后无据可查 | 关闭;开启后 `/root/syslog.log`,上限 10240 KB |
 
 ## 安装方式
 
@@ -17,14 +18,14 @@ iStoreOS 25.12 自解压安装器。**用途：湖北电信 IPTV 全链路助手
 
 1. 打开 LuCI → iStore
 2. 点「手动安装」
-3. 上传 `iptv-assistant_1.1.0_sdk_25.12_all.run`
+3. 上传 `iptv-assistant_1.2.0_sdk_25.12_all.run`
 4. 等待完成
 
 ### 方式 2:命令行
 
 ```bash
-scp iptv-assistant_1.1.0_sdk_25.12_all.run root@192.168.1.1:/tmp/
-ssh root@192.168.1.1 'sh /tmp/iptv-assistant_1.1.0_sdk_25.12_all.run'
+scp iptv-assistant_1.2.0_sdk_25.12_all.run root@192.168.1.1:/tmp/
+ssh root@192.168.1.1 'sh /tmp/iptv-assistant_1.2.0_sdk_25.12_all.run'
 ```
 
 ## 装了什么
@@ -45,6 +46,7 @@ ssh root@192.168.1.1 'sh /tmp/iptv-assistant_1.1.0_sdk_25.12_all.run'
 - **接口列表**（表格，可增删）：接口下拉框（自动读真实接口）+ IGMP 版本下拉
 - **组播桥优化**：桥设备下拉 + IGMP 侦听/组播查询员开关
 - **FCC 快速换台路由**：启用开关 + IPTV 逻辑接口下拉 + 运行时设备名下拉（第一项「自动（IPTV 拨号口）」）+ 服务器地址 + 掩码
+- **系统日志持久化**：启用开关 + 日志文件路径 + 大小上限（默认关闭；路径禁 /tmp；禁用时自动恢复内存日志）
 - 保存后自动 `/etc/init.d/iptv-assistant reload`，所有改动立即生效
 
 ## 配置默认值（恢复参照）
@@ -70,6 +72,11 @@ config fcc 'fcc'
 	option interface 'wan1'         # IPTV 逻辑接口
 	option target '121.60.255.120'  # 湖北电信 FCC 服务器
 	option netmask '255.255.255.255' # /32 精确匹配
+
+config syslog 'syslog'
+	option enabled '0'              # 0=关闭(默认内存日志);1=logread 落盘,重启不丢
+	option path '/root/syslog.log'  # 落盘路径(禁 /tmp)
+	option size '10240'             # 环形上限 KB
 ```
 
 ## 构建
@@ -77,7 +84,7 @@ config fcc 'fcc'
 ```bash
 cd docs/iptv-assistant.run
 sh build.sh
-# 输出: iptv-assistant_1.1.0_sdk_25.12_all.run
+# 输出: iptv-assistant_1.2.0_sdk_25.12_all.run
 ```
 
 格式:makeself 风格 shell header + gzip 压缩 tar。不依赖 makeself 工具,纯 `tar/gzip/sh` 手搓。

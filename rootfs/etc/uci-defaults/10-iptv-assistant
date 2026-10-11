@@ -21,5 +21,10 @@ config fcc 'fcc'
 	option interface 'wan1'
 	option target '121.60.255.120'
 	option netmask '255.255.255.255'
+
+config syslog 'syslog'
+	option enabled '0'
+	option path '/root/syslog.log'
+	option size '10240'
 EOF
 exit 0

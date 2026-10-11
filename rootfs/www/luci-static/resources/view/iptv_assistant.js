@@ -148,6 +148,29 @@ return view.extend({
 			o.placeholder = '255.255.255.255';
 			o.datatype = 'ip4addr';
 
+			/* ---- Syslog persistence section ---- */
+			s = m.section(form.NamedSection, 'syslog', 'syslog', _('系统日志持久化'));
+			s.addremove = false;
+
+			o = s.option(form.Flag, 'enabled', _('启用日志落盘'),
+				_('默认 logread 日志在内存里，重启即清空——断网/故障后无据可查。'
+				  + '开启后系统日志写入指定文件，重启不丢。默认关闭，避免不必要的写盘。'));
+			o.default = '0';
+			o.rmempty = false;
+
+			o = s.option(form.Value, 'path', _('日志文件路径'),
+				_('必须落在持久化存储上（系统盘 /root 或数据盘 /mnt/xxx 均可）。'
+				  + '不能放在 /tmp——那是内存盘，等于没持久化。日志按环形覆盖，只保留最近内容。'));
+			o.default = '/root/syslog.log';
+			o.placeholder = '/root/syslog.log';
+			o.rmempty = false;
+
+			o = s.option(form.Value, 'size', _('日志文件大小上限 (KB)'),
+				_('到达上限后从头部覆盖旧内容。10240 KB ≈ 10 MB，一般够数天留档；要更久就调大。'));
+			o.default = '10240';
+			o.placeholder = '10240';
+			o.datatype = 'uinteger';
+
 			/* ---- Save & Apply hook ---- */
 			s.onSave = function() {
 				/* trigger reload after UCI commit */

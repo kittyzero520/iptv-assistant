@@ -6,7 +6,7 @@
 set -e
 cd "$(dirname "$0")"
 
-VERSION="1.1.0"
+VERSION="1.2.0"
 PKGNAME="iptv-assistant"
 ARCH="all"
 RUN_NAME="${PKGNAME}_${VERSION}_sdk_25.12_${ARCH}.run"

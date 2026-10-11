@@ -1,5 +1,6 @@
 #!/bin/sh /etc/rc.common
 # iptv-assistant: Force IGMP version on WAN/IPTV interfaces + tune kernel buffers
+# + persist system log to file (syslog section in UCI).
 # Reads UCI /etc/config/iptv_assistant, writes /etc/sysctl.d/10-iptv-assistant.conf,
 # then runs `sysctl --system` to apply.
 # Menu: Network → IPTV 网络助手 (IPTV Assistant)
@@ -104,11 +105,42 @@ apply_fcc() {
 	ip route replace "$target/$cidr" dev "$dev" 2>/dev/null
 }
 
+apply_syslog() {
+	local enabled path size
+	enabled=$(uci -q get iptv_assistant.syslog.enabled)
+	path=$(uci -q get iptv_assistant.syslog.path)
+	size=$(uci -q get iptv_assistant.syslog.size)
+
+	# 禁用:移除此前由插件设置的持久化日志,恢复默认内存日志(logread)
+	if [ "$enabled" != "1" ]; then
+		if uci -q get system.@system[0].log_file >/dev/null; then
+			uci -q delete system.@system[0].log_file
+			uci -q commit system
+			/etc/init.d/log restart 2>/dev/null
+		fi
+		return 0
+	fi
+
+	# 启用:路径校验(非空;拒绝 /tmp——内存盘等于没持久化)
+	[ -z "$path" ] && path='/root/syslog.log'
+	case "$path" in
+		/tmp/*|/tmp) echo "iptv-assistant: syslog path under /tmp rejected: $path" >&2; return 0 ;;
+	esac
+	[ -z "$size" ] && size='10240'
+
+	mkdir -p "$(dirname "$path")" 2>/dev/null
+	uci -q set "system.@system[0].log_file=$path"
+	uci -q set "system.@system[0].log_size=$size"
+	uci -q commit system
+	/etc/init.d/log restart 2>/dev/null
+}
+
 apply_now() {
 	generate_conf
 	apply_bridge
 	apply_fcc
 	sysctl --system 2>/dev/null || sysctl -p "$CONF_FILE"
+	apply_syslog
 }
 
 start_service() { apply_now; }

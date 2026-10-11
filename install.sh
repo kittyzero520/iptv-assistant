@@ -57,6 +57,12 @@ sysctl net.ipv4.conf 2>/dev/null | grep force_igmp_version | grep -v '= 0$' || e
 echo "--- rmem_max / netdev_max_backlog ---"
 sysctl -n net.core.rmem_max 2>/dev/null
 sysctl -n net.core.netdev_max_backlog 2>/dev/null
+echo "--- syslog persistence ---"
+if [ "$(uci -q get iptv_assistant.syslog.enabled)" = "1" ]; then
+	echo "log_file = $(uci -q get system.@system[0].log_file) (log service restarted)"
+else
+	echo "(disabled - logread stays in RAM)"
+fi
 
 echo
 echo "[iptv-assistant] Done."
